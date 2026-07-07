@@ -509,9 +509,6 @@ function scoreIcon(icon, query, useApi) {
     else if (slug.startsWith(q)) s += 60;
     else if (new RegExp('\\b' + escRegex(q) + '\\b').test(slug)) s += 35;
     else if (slug.includes(q)) s += 15;
-    const desc = (proj.description || '').toLowerCase();
-    if (new RegExp('\\b' + escRegex(q) + '\\b').test(desc)) s += 15;
-    else if (desc.includes(q)) s += 5;
     if ((proj.author || '').toLowerCase().includes(q)) s += 30;
   }
 
