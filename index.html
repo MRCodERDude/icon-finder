@@ -494,14 +494,15 @@ function scoreIcon(icon, query, useApi) {
   const hasApi = !!proj;
   const primaryText = hasApi ? (proj.title || '').toLowerCase() : slug;
   const primaryWords = primaryText.split(/\s+/);
+  const qWords = q.split(/\s+/).filter(function(w) { return w.length > 1; });
   let s = 0;
 
   if (primaryText === q) s += 500;
-  else if (primaryText.startsWith(q + ' ') || primaryText.startsWith(q + '-')) s += 280;
-  else if (primaryWords[0] === q) s += 250;
-  else if (primaryText.startsWith(q)) s += 160;
-  else if (new RegExp('\\b' + escRegex(q) + '\\b').test(primaryText)) s += 90;
-  else if (primaryText.includes(q)) s += 40;
+  else if (primaryText.startsWith(q + ' ') || primaryText.startsWith(q + '-')) s += 350;
+  else if (primaryWords[0] === q.split(/\s+/)[0]) s += 200;
+  else if (primaryText.startsWith(q)) s += 120;
+  else if (new RegExp('\\b' + escRegex(q) + '\\b').test(primaryText)) s += 70;
+  else if (primaryText.includes(q)) s += 25;
 
   if (hasApi) {
     if (slug === q) s += 200;
@@ -514,19 +515,22 @@ function scoreIcon(icon, query, useApi) {
 
   if (folder === q) s += 40;
 
-  const words = q.split(/\s+/).filter(w => w.length > 1);
-  for (const w of words) {
-    const re = new RegExp('\\b' + escRegex(w));
-    if (re.test(primaryText)) s += 20;
-    if (re.test(slug)) s += 10;
+  var allWordsMatch = qWords.length > 0;
+  for (var i = 0; i < qWords.length; i++) {
+    var w = qWords[i];
+    var wRe = new RegExp('\\b' + escRegex(w));
+    if (wRe.test(primaryText)) s += 25;
+    else allWordsMatch = false;
+    if (wRe.test(slug)) s += 10;
     if (folder.includes(w)) s += 8;
   }
+  if (allWordsMatch && qWords.length >= 2 && s > 0) s += 300;
 
   if (s > 0) {
-    const ratio = q.length / Math.max(primaryText.length, 1);
-    s += Math.round(ratio * 200);
+    var ratio = q.length / Math.max(primaryText.length, 1);
+    s += Math.min(Math.round(ratio * 100), 150);
   } else if (q.length >= 4) {
-    const sim = stringSimilarity(q, primaryText);
+    var sim = stringSimilarity(q, primaryText);
     if (sim > 0.65) s += Math.round(sim * 40);
   }
   return s;
