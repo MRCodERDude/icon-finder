@@ -40,7 +40,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Header ── */
 .header {
   position: sticky;
   top: 0;
@@ -84,7 +83,6 @@ body {
   font-weight: 500;
 }
 
-/* ── Search ── */
 .search-bar {
   max-width: 640px;
   margin: 20px auto 16px;
@@ -112,7 +110,6 @@ body {
   box-shadow: 0 0 0 3px rgba(27, 217, 106, 0.12);
 }
 
-/* ── Stats ── */
 .stats-bar {
   text-align: center;
   font-size: 12px;
@@ -121,7 +118,6 @@ body {
   font-weight: 500;
 }
 
-/* ── Grid ── */
 .grid-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -134,7 +130,6 @@ body {
   font-weight: 500;
 }
 
-/* ── Card Grid (Modrinth-style) ── */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -159,11 +154,10 @@ body {
 }
 .card:active { transform: translateY(0); }
 
-/* Card icon area */
 .card-icon-wrap {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 */
+  padding-top: 56.25%; 
   background: var(--color-icon-bg);
   overflow: hidden;
 }
@@ -197,7 +191,6 @@ body {
   color: var(--color-text-dim);
 }
 
-/* Card body */
 .card-body {
   padding: 14px 16px 16px;
   flex: 1;
@@ -243,7 +236,6 @@ body {
 }
 .card-meta .downloads svg { width: 14px; height: 14px; opacity: 0.6; }
 
-/* Badges */
 .badge {
   font-size: 10px;
   padding: 3px 9px;
@@ -273,7 +265,6 @@ body {
   color: var(--color-text-dim);
 }
 
-/* Bad Apple time link */
 .card-ba-link {
   display: inline-flex;
   align-items: center;
@@ -291,7 +282,6 @@ body {
 }
 .card-ba-link:hover { background: var(--color-brand-bg-hover); }
 
-/* ── States ── */
 .loading-state, .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -321,7 +311,6 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Skeleton cards */
 .skeleton .card-icon-wrap { background: var(--color-surface-raised); }
 .skeleton .card-body > * {
   background: var(--color-surface-raised);
@@ -337,7 +326,6 @@ body {
   50% { opacity: 0.7; }
 }
 
-/* ── Footer ── */
 .footer {
   text-align: center;
   padding: 20px;
@@ -347,7 +335,6 @@ body {
   margin-top: 40px;
 }
 
-/* ── Responsive ── */
 @media (max-width: 640px) {
   .header { padding: 12px 16px; }
   .header-title { font-size: 15px; }
@@ -367,7 +354,6 @@ body {
 </head>
 <body>
 
-<!-- ── Header ── -->
 <header class="header">
   <a class="header-brand" href=".">
     <img class="header-logo" src="logo.png" alt="Icon Finder" onerror="this.style.display='none'">
@@ -378,15 +364,12 @@ body {
   </a>
 </header>
 
-<!-- ── Search ── -->
 <div class="search-bar">
   <input type="text" id="searchInput" placeholder="Search icons by mod name, slug, or category…" autofocus disabled>
 </div>
 
-<!-- ── Stats ── -->
 <div class="stats-bar" id="statsBar"></div>
 
-<!-- ── Grid ── -->
 <div class="grid-container">
   <div class="result-count" id="resultCount"></div>
   <div class="card-grid" id="cardGrid">
@@ -401,21 +384,17 @@ body {
 </footer>
 
 <script>
-// ── Configuration ──
 const JSON_PATH = 'icon_index.json';
 const FPS = 30;
 const YT_ID = 'FZCp8zfRlhU';
 const MODRINTH_API = 'https://api.modrinth.com/v2';
-const BATCH_SIZE = 20;       // Max slugs per API call
-const API_DELAY = 250;       // ms between batch calls
-const MAX_RESULTS = 120;     // Max results to show
+const BATCH_SIZE = 20;
+const API_DELAY = 250;
+const MAX_RESULTS = 120;
 
-// ── State ──
 let allIcons = [];
-let apiCache = {};           // slug → project data
-let searchId = 0;            // Incrementing ID to cancel stale searches
-
-// ── Helpers ──
+let apiCache = {};
+let searchId = 0;
 
 function fmtTime(f) {
   const s = f / FPS;
@@ -433,7 +412,6 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
-/** Extract the Modrinth project slug from a filename */
 function extractSlug(filename) {
   return filename
     .replace(/\.(png|webp|jpg|jpeg|gif|bmp|svg|ico)(\?.*)?$/i, '')
@@ -441,7 +419,6 @@ function extractSlug(filename) {
     .trim();
 }
 
-/** Format a number like 1234567 → "1.2M" */
 function fmtNum(n) {
   if (n == null) return '';
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -449,57 +426,41 @@ function fmtNum(n) {
   return n.toLocaleString();
 }
 
-// ── API: Batch-fetch project data from Modrinth ──
-
 async function fetchProjectsBatch(slugs) {
   const unique = [...new Set(slugs.filter(s => s && !apiCache[s]))];
   if (unique.length === 0) return;
-
-  // Split into chunks
   for (let i = 0; i < unique.length; i += BATCH_SIZE) {
     const chunk = unique.slice(i, i + BATCH_SIZE);
-    const idsParam = JSON.stringify(chunk);
-    const url = MODRINTH_API + '/projects?ids=' + encodeURIComponent(idsParam);
-
+    const url = MODRINTH_API + '/projects?ids=' + encodeURIComponent(JSON.stringify(chunk));
     try {
       const resp = await fetch(url);
       if (!resp.ok) {
         if (resp.status === 429) {
-          // Rate limited — wait and retry
           await new Promise(r => setTimeout(r, 3000));
           const retry = await fetch(url);
           if (retry.ok) {
             const data = await retry.json();
-            for (const proj of data) {
-              apiCache[proj.slug] = proj;
-            }
+            for (const proj of data) apiCache[proj.slug] = proj;
           }
         }
         continue;
       }
       const data = await resp.json();
-      for (const proj of data) {
-        apiCache[proj.slug] = proj;
-      }
+      for (const proj of data) apiCache[proj.slug] = proj;
     } catch (e) {
       console.warn('API batch error:', e);
     }
-
-    // Be nice to the API
     if (i + BATCH_SIZE < unique.length) {
       await new Promise(r => setTimeout(r, API_DELAY));
     }
   }
 }
 
-// ── Normalize + Score ──
-
 function normalizeIcon(raw) {
   const fn = raw.filename || raw.n || '';
   const slug = extractSlug(fn);
   return {
-    filename: fn,
-    slug: slug,
+    filename: fn, slug: slug,
     folder: raw.folder || raw.f || '',
     page: raw.page || raw.p || 0,
     frameStart: raw.frame_start || raw.s || 0,
@@ -511,7 +472,6 @@ function escRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** Simple edit-distance based similarity (0–1). 1 = identical, 0 = nothing in common. */
 function stringSimilarity(a, b) {
   const al = a.length, bl = b.length;
   if (al === 0 || bl === 0) return 0;
@@ -528,89 +488,60 @@ function scoreIcon(icon, query, useApi) {
   const q = query.toLowerCase().trim();
   const slug = icon.slug.toLowerCase();
   const folder = icon.folder.toLowerCase();
-
-  // Skip junk entries
   if (!slug || folder === 'to be processed') return 0;
 
+  const proj = useApi !== false ? apiCache[icon.slug] : null;
+  const hasApi = !!proj;
+  const primaryText = hasApi ? (proj.title || '').toLowerCase() : slug;
+  const primaryWords = primaryText.split(/\s+/);
   let s = 0;
 
-  // ── Slug matching (most important) ──
-  if (slug === q) {
-    s += 500;                                    // Exact slug match: "sodium" == "sodium"
-  } else if (slug.startsWith(q + '-') || slug.startsWith(q + '_')) {
-    s += 250;                                    // Slug starts with query-then-separator: "sodium-extra"
-  } else if (slug.startsWith(q)) {
-    s += 120;                                    // Slug starts with query: "sodiumblending"
-  } else if (new RegExp('\\b' + escRegex(q) + '\\b').test(slug)) {
-    s += 70;                                     // Query is a whole word in slug
-  } else if (slug.includes(q)) {
-    s += 30;                                     // Substring match
+  if (primaryText === q) s += 500;
+  else if (primaryText.startsWith(q + ' ') || primaryText.startsWith(q + '-')) s += 280;
+  else if (primaryWords[0] === q) s += 250;
+  else if (primaryText.startsWith(q)) s += 160;
+  else if (new RegExp('\\b' + escRegex(q) + '\\b').test(primaryText)) s += 90;
+  else if (primaryText.includes(q)) s += 40;
+
+  if (hasApi) {
+    if (slug === q) s += 200;
+    else if (slug.startsWith(q + '-') || slug.startsWith(q + '_')) s += 120;
+    else if (slug.startsWith(q)) s += 60;
+    else if (new RegExp('\\b' + escRegex(q) + '\\b').test(slug)) s += 35;
+    else if (slug.includes(q)) s += 15;
+    const desc = (proj.description || '').toLowerCase();
+    if (new RegExp('\\b' + escRegex(q) + '\\b').test(desc)) s += 15;
+    else if (desc.includes(q)) s += 5;
+    if ((proj.author || '').toLowerCase().includes(q)) s += 30;
   }
 
-  // ── Folder matching ──
   if (folder === q) s += 40;
 
-  // ── API title matching (only when cache is available) ──
-  const proj = useApi !== false ? apiCache[icon.slug] : null;
-  if (proj) {
-    const title = (proj.title || '').toLowerCase();
-    const titleWords = title.split(/\s+/);
-    if (title === q) {
-      s += 450;                                  // Exact title match: "Sodium"
-    } else if (title.startsWith(q + ' ') || title.startsWith(q + '-')) {
-      s += 200;                                  // Title starts with query as word
-    } else if (titleWords[0] === q) {
-      s += 180;                                  // First word of title matches
-    } else if (title.startsWith(q)) {
-      s += 100;                                  // Title starts with query
-    } else if (new RegExp('\\b' + escRegex(q) + '\\b', 'i').test(title)) {
-      s += 60;                                   // Query is a whole word in title
-    } else if (title.includes(q)) {
-      s += 25;                                   // Substring in title
-    }
-
-    const desc = (proj.description || '').toLowerCase();
-    if (new RegExp('\\b' + escRegex(q) + '\\b').test(desc)) s += 10;
-    else if (desc.includes(q)) s += 4;
-  }
-
-  // ── Word-boundary matching on slug (for multi-word queries) ──
   const words = q.split(/\s+/).filter(w => w.length > 1);
   for (const w of words) {
     const re = new RegExp('\\b' + escRegex(w));
-    if (re.test(slug)) s += 15;
+    if (re.test(primaryText)) s += 20;
+    if (re.test(slug)) s += 10;
     if (folder.includes(w)) s += 8;
   }
 
-  // ── Length & fuzzy similarity bonus ──
   if (s > 0) {
-    const qLen = q.length;
-    const slugLen = Math.max(slug.length, 1);
-    const ratio = qLen / slugLen;
+    const ratio = q.length / Math.max(primaryText.length, 1);
     s += Math.round(ratio * 200);
   } else if (q.length >= 4) {
-    const sim = stringSimilarity(q, slug);
-    if (sim > 0.65) {
-      s += Math.round(sim * 40);
-    }
+    const sim = stringSimilarity(q, primaryText);
+    if (sim > 0.65) s += Math.round(sim * 40);
   }
-
   return s;
 }
 
-// ── Render ──
-
 const badgeMap = {
-  mod: 'badge-mod',
-  modpack: 'badge-modpack',
-  resourcepack: 'badge-resourcepack',
-  datapack: 'badge-datapack',
-  shader: 'badge-shader',
-  plugin: 'badge-plugin'
+  mod: 'badge-mod', modpack: 'badge-modpack',
+  resourcepack: 'badge-resourcepack', datapack: 'badge-datapack',
+  shader: 'badge-shader', plugin: 'badge-plugin'
 };
 
 function renderCard(icon, proj) {
-  const hasApiData = !!proj;
   const title = proj?.title || icon.slug.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
   const desc = proj?.description || '';
   const author = proj?.author || '';
@@ -619,63 +550,43 @@ function renderCard(icon, proj) {
   const projectType = proj?.project_type || icon.folder;
   const categories = proj?.categories || [];
   const modrinthUrl = proj ? 'https://modrinth.com/' + projectType + '/' + icon.slug : '#';
-
   const typeBadge = badgeMap[projectType] || '';
   const typeLabel = projectType === 'resourcepack' ? 'resource pack'
     : projectType === 'datapack' ? 'data pack' : projectType;
 
-  return `
-    <a class="card" href="${modrinthUrl}" target="_blank" rel="noopener"
-       title="${escHtml(title)}${desc ? ' — ' + escHtml(desc) : ''}">
-      <div class="card-icon-wrap">
-        ${iconUrl
-          ? `<img src="${escHtml(iconUrl)}" alt="${escHtml(title)}" loading="lazy"
-                 onerror="this.parentElement.innerHTML='<div class=\\'card-icon-placeholder\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'3\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><path d=\\'M21 15l-5-5L5 21\\'/></svg></div>'">`
-          : `<div class="card-icon-placeholder">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                 <rect x="3" y="3" width="18" height="18" rx="3"/>
-                 <circle cx="8.5" cy="8.5" r="1.5"/>
-                 <path d="M21 15l-5-5L5 21"/>
-               </svg>
-             </div>`
-        }
-      </div>
-      <div class="card-body">
-        <div class="card-title">${escHtml(title)}</div>
-        ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
-        <div class="card-tags">
-          <span class="badge ${typeBadge}">${escHtml(typeLabel)}</span>
-          ${categories.slice(0, 3).map(c => `<span class="badge">${escHtml(c)}</span>`).join('')}
-        </div>
-        <div class="card-meta">
-          ${author ? `<span>by ${escHtml(author)}</span>` : ''}
-          ${downloads != null ? `<span class="downloads">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            ${fmtNum(downloads)}
-          </span>` : ''}
-        </div>
-        <span class="card-ba-link" onclick="event.preventDefault();event.stopPropagation();window.open('${ytUrl(icon.frameStart)}','_blank')">
-          ▶ ${fmtTime(icon.frameStart)}
-        </span>
-      </div>
-    </a>`;
+  return '<a class="card" href="' + modrinthUrl + '" target="_blank" rel="noopener" title="' + escHtml(title) + (desc ? ' — ' + escHtml(desc) : '') + '">'
+    + '<div class="card-icon-wrap">'
+    + (iconUrl
+      ? '<img src="' + escHtml(iconUrl) + '" alt="' + escHtml(title) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'card-icon-placeholder\\\'><svg viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'currentColor\\\' stroke-width=\\\'1.5\\\'><rect x=\\\'3\\\' y=\\\'3\\\' width=\\\'18\\\' height=\\\'18\\\' rx=\\\'3\\\'/><circle cx=\\\'8.5\\\' cy=\\\'8.5\\\' r=\\\'1.5\\\'/><path d=\\\'M21 15l-5-5L5 21\\\'/></svg></div>\'">'
+      : '<div class="card-icon-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>')
+    + '</div>'
+    + '<div class="card-body">'
+    + '<div class="card-title">' + escHtml(title) + '</div>'
+    + (desc ? '<div class="card-desc">' + escHtml(desc) + '</div>' : '')
+    + '<div class="card-tags"><span class="badge ' + typeBadge + '">' + escHtml(typeLabel) + '</span>'
+    + categories.slice(0, 3).map(function(c) { return '<span class="badge">' + escHtml(c) + '</span>'; }).join('')
+    + '</div>'
+    + '<div class="card-meta">'
+    + (author ? '<span>by ' + escHtml(author) + '</span>' : '')
+    + (downloads != null ? '<span class="downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' + fmtNum(downloads) + '</span>' : '')
+    + '</div>'
+    + '<span class="card-ba-link" onclick="event.preventDefault();event.stopPropagation();window.open(\'' + ytUrl(icon.frameStart) + '\',\'_blank\')">▶ ' + fmtTime(icon.frameStart) + '</span>'
+    + '</div></a>';
 }
 
 function renderSkeleton(count) {
-  let html = '';
-  for (let i = 0; i < count; i++) {
-    html += `<div class="card skeleton"><div class="card-icon-wrap"></div><div class="card-body"><div class="card-title"></div><div class="card-desc"></div><div class="card-meta"></div></div></div>`;
+  var h = '';
+  for (var i = 0; i < count; i++) {
+    h += '<div class="card skeleton"><div class="card-icon-wrap"></div><div class="card-body"><div class="card-title"></div><div class="card-desc"></div><div class="card-meta"></div></div></div>';
   }
-  return html;
+  return h;
 }
 
 async function doSearch(query) {
-  const grid = document.getElementById('cardGrid');
-  const count = document.getElementById('resultCount');
-  const q = query.toLowerCase().trim();
-
-  // Cancel any in-flight search
-  const myId = ++searchId;
+  var grid = document.getElementById('cardGrid');
+  var count = document.getElementById('resultCount');
+  var q = query.toLowerCase().trim();
+  var myId = ++searchId;
 
   if (!q) {
     count.textContent = '';
@@ -683,19 +594,16 @@ async function doSearch(query) {
     return;
   }
 
-  // ── Pass 1: Score all icons, deduplicate by slug ──
-  const bestBySlug = new Map();
-  for (const icon of allIcons) {
-    const s = scoreIcon(icon, q);
+  var bestBySlug = new Map();
+  for (var i = 0; i < allIcons.length; i++) {
+    var icon = allIcons[i];
+    var s = scoreIcon(icon, q);
     if (s > 0) {
-      const existing = bestBySlug.get(icon.slug);
-      if (!existing || s > existing.score) {
-        bestBySlug.set(icon.slug, { icon, score: s });
-      }
+      var existing = bestBySlug.get(icon.slug);
+      if (!existing || s > existing.score) bestBySlug.set(icon.slug, { icon: icon, score: s });
     }
     if (bestBySlug.size >= 2000) break;
   }
-
   if (myId !== searchId) return;
 
   if (bestBySlug.size === 0) {
@@ -704,54 +612,30 @@ async function doSearch(query) {
     return;
   }
 
-  let top = [...bestBySlug.values()].sort((a, b) => b.score - a.score).slice(0, MAX_RESULTS);
-
+  var top = Array.from(bestBySlug.values()).sort(function(a, b) { return b.score - a.score; }).slice(0, MAX_RESULTS);
   count.textContent = top.length + ' result' + (top.length > 1 ? 's' : '') + ' · Loading from Modrinth…';
   grid.innerHTML = renderSkeleton(Math.min(top.length, 20));
 
-  const slugsToFetch = top.map(t => t.icon.slug).filter(s => !apiCache[s]);
-  if (slugsToFetch.length > 0) {
-    await fetchProjectsBatch(slugsToFetch);
-  }
-
+  var slugsToFetch = top.map(function(t) { return t.icon.slug; }).filter(function(s) { return !apiCache[s]; });
+  if (slugsToFetch.length > 0) await fetchProjectsBatch(slugsToFetch);
   if (myId !== searchId) return;
 
-  // ── Pass 2: Re-score with API data, re-sort ──
-  for (const item of top) {
-    item.score = scoreIcon(item.icon, q, true);
-  }
-  top.sort((a, b) => b.score - a.score);
-
+  for (var j = 0; j < top.length; j++) top[j].score = scoreIcon(top[j].icon, q, true);
+  top.sort(function(a, b) { return b.score - a.score; });
   count.textContent = top.length + ' result' + (top.length > 1 ? 's' : '');
-  grid.innerHTML = top.map(t => renderCard(t.icon, apiCache[t.icon.slug] || null)).join('');
-
-  // Lazy-load images
-  const imgs = grid.querySelectorAll('img[loading="lazy"]');
-  if ('loading' in HTMLImageElement.prototype) {
-    // Native lazy loading — already set
-  } else {
-    // Fallback: load all immediately
-    imgs.forEach(img => { img.loading = 'eager'; });
-  }
+  grid.innerHTML = top.map(function(t) { return renderCard(t.icon, apiCache[t.icon.slug] || null); }).join('');
 }
 
-// ── Init ──
-
 async function init() {
-  const statsBar = document.getElementById('statsBar');
-  const grid = document.getElementById('cardGrid');
-  const searchInput = document.getElementById('searchInput');
-
+  var statsBar = document.getElementById('statsBar');
+  var grid = document.getElementById('cardGrid');
+  var searchInput = document.getElementById('searchInput');
   try {
-    const resp = await fetch(JSON_PATH);
+    var resp = await fetch(JSON_PATH);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
+    var data = await resp.json();
     allIcons = (data.icons || []).map(normalizeIcon);
-
-    statsBar.textContent =
-      (data.total_icons || allIcons.length).toLocaleString() + ' icons · ' +
-      (data.num_pages || 0) + ' pages · Bad Apple @ ' + FPS + 'fps';
-
+    statsBar.textContent = (data.total_icons || allIcons.length).toLocaleString() + ' icons · ' + (data.num_pages || 0) + ' pages · Bad Apple @ ' + FPS + 'fps';
     searchInput.disabled = false;
     searchInput.placeholder = 'Search icons by mod name, slug, or category…';
     grid.innerHTML = '<div class="empty-state">Type a mod name above to search 111K+ icons</div>';
@@ -763,15 +647,12 @@ async function init() {
   }
 }
 
-// ── Debounced search ──
-let searchTimeout;
+var searchTimeout;
 document.getElementById('searchInput').addEventListener('input', function(e) {
   clearTimeout(searchTimeout);
-  const val = e.target.value;
-  searchTimeout = setTimeout(() => doSearch(val), 150);
+  searchTimeout = setTimeout(function() { doSearch(e.target.value); }, 150);
 });
 
-// ── Keyboard shortcut: / to focus search ──
 document.addEventListener('keydown', function(e) {
   if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
     e.preventDefault();
