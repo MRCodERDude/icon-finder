@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modrinth Icon Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-bg: #0f1115;
+  --color-surface: #1a1d24;
+  --color-surface-hover: #21242d;
+  --color-surface-raised: #282c36;
+  --color-text: #a1a8b5;
+  --color-text-dim: #5c6270;
+  --color-text-heading: #f0f2f5;
+  --color-brand: #1bd96a;
+  --color-brand-hover: #17c85f;
+  --color-brand-bg: rgba(27, 217, 106, 0.1);
+  --color-brand-bg-hover: rgba(27, 217, 106, 0.16);
+  --color-border: rgba(255,255,255,0.06);
+  --color-icon-bg: #1e2129;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Roboto, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body {
+  font-family: var(--font);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(15, 17, 21, 0.82);
+  border-bottom: 1px solid var(--color-border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-text-heading);
+}
+.header-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-surface-raised);
+}
+.header-info { display: flex; flex-direction: column; }
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+.header-subtitle {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+
+/* ── Search ── */
+.search-bar {
+  max-width: 640px;
+  margin: 20px auto 16px;
+  padding: 0 24px;
+}
+.search-bar input {
+  width: 100%;
+  padding: 13px 18px 13px 46px;
+  font-size: 15px;
+  font-family: var(--font);
+  font-weight: 400;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-text-heading);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c6270' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 15px center;
+}
+.search-bar input::placeholder { color: var(--color-text-dim); }
+.search-bar input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(27, 217, 106, 0.12);
+}
+
+/* ── Stats ── */
+.stats-bar {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-dim);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+/* ── Grid ── */
+.grid-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+.result-count {
+  font-size: 13px;
+  color: var(--color-text-dim);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+/* ── Card Grid (Modrinth-style) ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  background: var(--color-surface-hover);
+  border-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.card:active { transform: translateY(0); }
+
+/* Card icon area */
+.card-icon-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  background: var(--color-icon-bg);
+  overflow: hidden;
+}
+.card-icon-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .3s ease, opacity .3s ease;
+}
+.card:hover .card-icon-wrap img {
+  transform: scale(1.06);
+}
+.card-icon-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-icon-bg);
+}
+.card-icon-placeholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.2;
+  color: var(--color-text-dim);
+}
+
+/* Card body */
+.card-body {
+  padding: 14px 16px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-heading);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  letter-spacing: -0.2px;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-dim);
+  margin-top: 4px;
+}
+.card-meta .downloads {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.card-meta .downloads svg { width: 14px; height: 14px; opacity: 0.6; }
+
+/* Badges */
+.badge {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.badge-mod         { background: rgba(27, 217, 106, 0.13);  color: #1bd96a; }
+.badge-modpack     { background: rgba(245, 158, 11, 0.13);  color: #f59e0b; }
+.badge-resourcepack{ background: rgba(96, 165, 250, 0.13);  color: #60a5fa; }
+.badge-datapack    { background: rgba(167, 139, 250, 0.13); color: #a78bfa; }
+.badge-shader      { background: rgba(244, 114, 182, 0.13); color: #f472b6; }
+.badge-plugin      { background: rgba(251, 146, 60, 0.13);  color: #fb923c; }
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+.card-tags .badge {
+  background: rgba(255,255,255,0.04);
+  color: var(--color-text-dim);
+}
+
+/* Bad Apple time link */
+.card-ba-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-brand);
+  text-decoration: none;
+  background: var(--color-brand-bg);
+  padding: 4px 12px;
+  border-radius: 14px;
+  margin-top: 6px;
+  align-self: flex-start;
+  transition: background .15s;
+}
+.card-ba-link:hover { background: var(--color-brand-bg-hover); }
+
+/* ── States ── */
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-dim);
+  font-size: 14px;
+  font-weight: 500;
+  grid-column: 1 / -1;
+}
+.empty-state::before {
+  content: "📦";
+  display: block;
+  font-size: 44px;
+  margin-bottom: 14px;
+  opacity: 0.35;
+}
+.loading-state::after {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton cards */
+.skeleton .card-icon-wrap { background: var(--color-surface-raised); }
+.skeleton .card-body > * {
+  background: var(--color-surface-raised);
+  border-radius: 4px;
+  height: 14px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.skeleton .card-body > .card-title { width: 70%; height: 16px; }
+.skeleton .card-body > .card-desc { width: 90%; }
+.skeleton .card-body > .card-meta { width: 50%; height: 12px; }
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--color-text-dim);
+  border-top: 1px solid var(--color-border);
+  margin-top: 40px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .header { padding: 12px 16px; }
+  .header-title { font-size: 15px; }
+  .search-bar { padding: 0 16px; margin: 16px auto 12px; }
+  .search-bar input { font-size: 14px; padding: 12px 14px 12px 40px; }
+  .grid-container { padding: 0 12px 32px; }
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .card-icon-wrap { padding-top: 100%; }
+  .card-body { padding: 10px 12px 12px; }
+  .card-title { font-size: 13px; }
+  .card-desc { font-size: 11px; -webkit-line-clamp: 1; }
+}
+@media (max-width: 380px) {
+  .card-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <a class="header-brand" href=".">
+    <img class="header-logo" src="logo.png" alt="Icon Finder" onerror="this.style.display='none'">
+    <div class="header-info">
+      <span class="header-title">Modrinth Icon Finder</span>
+      <span class="header-subtitle">Search 111K+ mod icons from the Bad Apple video</span>
+    </div>
+  </a>
+</header>
+
+<!-- ── Search ── -->
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search icons by mod name, slug, or category…" autofocus disabled>
+</div>
+
+<!-- ── Stats ── -->
+<div class="stats-bar" id="statsBar"></div>
+
+<!-- ── Grid ── -->
+<div class="grid-container">
+  <div class="result-count" id="resultCount"></div>
+  <div class="card-grid" id="cardGrid">
+    <div class="loading-state">Loading icon index…</div>
+  </div>
+</div>
+
+<footer class="footer">
+  Icons sourced from <a href="https://modrinth.com" style="color:var(--color-brand);text-decoration:none;">Modrinth API</a>
+  · Watch <a href="https://www.youtube.com/watch?v=FZCp8zfRlhU" style="color:var(--color-brand);text-decoration:none;">Bad Apple!!</a> on YouTube
+  · Built by <a href="https://github.com/MRCodERDude" style="color:var(--color-brand);text-decoration:none;">MRCodERDude</a>
+</footer>
+
+<script>
+// ── Configuration ──
+const JSON_PATH = 'icon_index.json';
+const FPS = 30;
+const YT_ID = 'FZCp8zfRlhU';
+const MODRINTH_API = 'https://api.modrinth.com/v2';
+const BATCH_SIZE = 20;       // Max slugs per API call
+const API_DELAY = 250;       // ms between batch calls
+const MAX_RESULTS = 120;     // Max results to show
+
+// ── State ──
+let allIcons = [];
+let apiCache = {};           // slug → project data
+let searchId = 0;            // Incrementing ID to cancel stale searches
+
+// ── Helpers ──
+
+function fmtTime(f) {
+  const s = f / FPS;
+  return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+}
+
+function ytUrl(f) {
+  const t = Math.floor(f / FPS);
+  return 'https://www.youtube.com/watch?v=' + YT_ID + '&t=' + t + 's';
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/** Extract the Modrinth project slug from a filename */
+function extractSlug(filename) {
+  return filename
+    .replace(/\.(png|webp|jpg|jpeg|gif|bmp|svg|ico)(\?.*)?$/i, '')
+    .replace(/^[-_\s]+|[-_\s]+$/g, '')
+    .trim();
+}
+
+/** Format a number like 1234567 → "1.2M" */
+function fmtNum(n) {
+  if (n == null) return '';
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toLocaleString();
+}
+
+// ── API: Batch-fetch project data from Modrinth ──
+
+async function fetchProjectsBatch(slugs) {
+  const unique = [...new Set(slugs.filter(s => s && !apiCache[s]))];
+  if (unique.length === 0) return;
+
+  // Split into chunks
+  for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+    const chunk = unique.slice(i, i + BATCH_SIZE);
+    const idsParam = JSON.stringify(chunk);
+    const url = MODRINTH_API + '/projects?ids=' + encodeURIComponent(idsParam);
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          // Rate limited — wait and retry
+          await new Promise(r => setTimeout(r, 3000));
+          const retry = await fetch(url);
+          if (retry.ok) {
+            const data = await retry.json();
+            for (const proj of data) {
+              apiCache[proj.slug] = proj;
+            }
+          }
+        }
+        continue;
+      }
+      const data = await resp.json();
+      for (const proj of data) {
+        apiCache[proj.slug] = proj;
+      }
+    } catch (e) {
+      console.warn('API batch error:', e);
+    }
+
+    // Be nice to the API
+    if (i + BATCH_SIZE < unique.length) {
+      await new Promise(r => setTimeout(r, API_DELAY));
+    }
+  }
+}
+
+// ── Normalize + Score ──
+
+function normalizeIcon(raw) {
+  const fn = raw.filename || raw.n || '';
+  const slug = extractSlug(fn);
+  return {
+    filename: fn,
+    slug: slug,
+    folder: raw.folder || raw.f || '',
+    page: raw.page || raw.p || 0,
+    frameStart: raw.frame_start || raw.s || 0,
+    frameEnd: raw.frame_end || raw.e || 0
+  };
+}
+
+function escRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Simple edit-distance based similarity (0–1). 1 = identical, 0 = nothing in common. */
+function stringSimilarity(a, b) {
+  const al = a.length, bl = b.length;
+  if (al === 0 || bl === 0) return 0;
+  const bigrams = new Set();
+  for (let i = 0; i < al - 1; i++) bigrams.add(a.substring(i, i + 2));
+  let hits = 0;
+  for (let i = 0; i < bl - 1; i++) {
+    if (bigrams.has(b.substring(i, i + 2))) hits++;
+  }
+  return (2 * hits) / (Math.max(al - 1, 1) + Math.max(bl - 1, 1));
+}
+
+function scoreIcon(icon, query, useApi) {
+  const q = query.toLowerCase().trim();
+  const slug = icon.slug.toLowerCase();
+  const folder = icon.folder.toLowerCase();
+
+  // Skip junk entries
+  if (!slug || folder === 'to be processed') return 0;
+
+  let s = 0;
+
+  // ── Slug matching (most important) ──
+  if (slug === q) {
+    s += 500;                                    // Exact slug match: "sodium" == "sodium"
+  } else if (slug.startsWith(q + '-') || slug.startsWith(q + '_')) {
+    s += 250;                                    // Slug starts with query-then-separator: "sodium-extra"
+  } else if (slug.startsWith(q)) {
+    s += 120;                                    // Slug starts with query: "sodiumblending"
+  } else if (new RegExp('\\b' + escRegex(q) + '\\b').test(slug)) {
+    s += 70;                                     // Query is a whole word in slug
+  } else if (slug.includes(q)) {
+    s += 30;                                     // Substring match
+  }
+
+  // ── Folder matching ──
+  if (folder === q) s += 40;
+
+  // ── API title matching (only when cache is available) ──
+  const proj = useApi !== false ? apiCache[icon.slug] : null;
+  if (proj) {
+    const title = (proj.title || '').toLowerCase();
+    const titleWords = title.split(/\s+/);
+    if (title === q) {
+      s += 450;                                  // Exact title match: "Sodium"
+    } else if (title.startsWith(q + ' ') || title.startsWith(q + '-')) {
+      s += 200;                                  // Title starts with query as word
+    } else if (titleWords[0] === q) {
+      s += 180;                                  // First word of title matches
+    } else if (title.startsWith(q)) {
+      s += 100;                                  // Title starts with query
+    } else if (new RegExp('\\b' + escRegex(q) + '\\b', 'i').test(title)) {
+      s += 60;                                   // Query is a whole word in title
+    } else if (title.includes(q)) {
+      s += 25;                                   // Substring in title
+    }
+
+    const desc = (proj.description || '').toLowerCase();
+    if (new RegExp('\\b' + escRegex(q) + '\\b').test(desc)) s += 10;
+    else if (desc.includes(q)) s += 4;
+  }
+
+  // ── Word-boundary matching on slug (for multi-word queries) ──
+  const words = q.split(/\s+/).filter(w => w.length > 1);
+  for (const w of words) {
+    const re = new RegExp('\\b' + escRegex(w));
+    if (re.test(slug)) s += 15;
+    if (folder.includes(w)) s += 8;
+  }
+
+  // ── Length & fuzzy similarity bonus ──
+  if (s > 0) {
+    const qLen = q.length;
+    const slugLen = Math.max(slug.length, 1);
+    const ratio = qLen / slugLen;
+    s += Math.round(ratio * 200);
+  } else if (q.length >= 4) {
+    const sim = stringSimilarity(q, slug);
+    if (sim > 0.65) {
+      s += Math.round(sim * 40);
+    }
+  }
+
+  return s;
+}
+
+// ── Render ──
+
+const badgeMap = {
+  mod: 'badge-mod',
+  modpack: 'badge-modpack',
+  resourcepack: 'badge-resourcepack',
+  datapack: 'badge-datapack',
+  shader: 'badge-shader',
+  plugin: 'badge-plugin'
+};
+
+function renderCard(icon, proj) {
+  const hasApiData = !!proj;
+  const title = proj?.title || icon.slug.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const desc = proj?.description || '';
+  const author = proj?.author || '';
+  const downloads = proj?.downloads;
+  const iconUrl = proj?.icon_url || '';
+  const projectType = proj?.project_type || icon.folder;
+  const categories = proj?.categories || [];
+  const modrinthUrl = proj ? 'https://modrinth.com/' + projectType + '/' + icon.slug : '#';
+
+  const typeBadge = badgeMap[projectType] || '';
+  const typeLabel = projectType === 'resourcepack' ? 'resource pack'
+    : projectType === 'datapack' ? 'data pack' : projectType;
+
+  return `
+    <a class="card" href="${modrinthUrl}" target="_blank" rel="noopener"
+       title="${escHtml(title)}${desc ? ' — ' + escHtml(desc) : ''}">
+      <div class="card-icon-wrap">
+        ${iconUrl
+          ? `<img src="${escHtml(iconUrl)}" alt="${escHtml(title)}" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\\'card-icon-placeholder\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'3\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><path d=\\'M21 15l-5-5L5 21\\'/></svg></div>'">`
+          : `<div class="card-icon-placeholder">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                 <rect x="3" y="3" width="18" height="18" rx="3"/>
+                 <circle cx="8.5" cy="8.5" r="1.5"/>
+                 <path d="M21 15l-5-5L5 21"/>
+               </svg>
+             </div>`
+        }
+      </div>
+      <div class="card-body">
+        <div class="card-title">${escHtml(title)}</div>
+        ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
+        <div class="card-tags">
+          <span class="badge ${typeBadge}">${escHtml(typeLabel)}</span>
+          ${categories.slice(0, 3).map(c => `<span class="badge">${escHtml(c)}</span>`).join('')}
+        </div>
+        <div class="card-meta">
+          ${author ? `<span>by ${escHtml(author)}</span>` : ''}
+          ${downloads != null ? `<span class="downloads">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            ${fmtNum(downloads)}
+          </span>` : ''}
+        </div>
+        <span class="card-ba-link" onclick="event.preventDefault();event.stopPropagation();window.open('${ytUrl(icon.frameStart)}','_blank')">
+          ▶ ${fmtTime(icon.frameStart)}
+        </span>
+      </div>
+    </a>`;
+}
+
+function renderSkeleton(count) {
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `<div class="card skeleton"><div class="card-icon-wrap"></div><div class="card-body"><div class="card-title"></div><div class="card-desc"></div><div class="card-meta"></div></div></div>`;
+  }
+  return html;
+}
+
+async function doSearch(query) {
+  const grid = document.getElementById('cardGrid');
+  const count = document.getElementById('resultCount');
+  const q = query.toLowerCase().trim();
+
+  // Cancel any in-flight search
+  const myId = ++searchId;
+
+  if (!q) {
+    count.textContent = '';
+    grid.innerHTML = '<div class="empty-state">Type a mod name above to search 111K+ icons</div>';
+    return;
+  }
+
+  // ── Pass 1: Score all icons, deduplicate by slug ──
+  const bestBySlug = new Map();
+  for (const icon of allIcons) {
+    const s = scoreIcon(icon, q);
+    if (s > 0) {
+      const existing = bestBySlug.get(icon.slug);
+      if (!existing || s > existing.score) {
+        bestBySlug.set(icon.slug, { icon, score: s });
+      }
+    }
+    if (bestBySlug.size >= 2000) break;
+  }
+
+  if (myId !== searchId) return;
+
+  if (bestBySlug.size === 0) {
+    count.textContent = '';
+    grid.innerHTML = '<div class="empty-state">No icons matching "' + escHtml(query) + '"</div>';
+    return;
+  }
+
+  let top = [...bestBySlug.values()].sort((a, b) => b.score - a.score).slice(0, MAX_RESULTS);
+
+  count.textContent = top.length + ' result' + (top.length > 1 ? 's' : '') + ' · Loading from Modrinth…';
+  grid.innerHTML = renderSkeleton(Math.min(top.length, 20));
+
+  const slugsToFetch = top.map(t => t.icon.slug).filter(s => !apiCache[s]);
+  if (slugsToFetch.length > 0) {
+    await fetchProjectsBatch(slugsToFetch);
+  }
+
+  if (myId !== searchId) return;
+
+  // ── Pass 2: Re-score with API data, re-sort ──
+  for (const item of top) {
+    item.score = scoreIcon(item.icon, q, true);
+  }
+  top.sort((a, b) => b.score - a.score);
+
+  count.textContent = top.length + ' result' + (top.length > 1 ? 's' : '');
+  grid.innerHTML = top.map(t => renderCard(t.icon, apiCache[t.icon.slug] || null)).join('');
+
+  // Lazy-load images
+  const imgs = grid.querySelectorAll('img[loading="lazy"]');
+  if ('loading' in HTMLImageElement.prototype) {
+    // Native lazy loading — already set
+  } else {
+    // Fallback: load all immediately
+    imgs.forEach(img => { img.loading = 'eager'; });
+  }
+}
+
+// ── Init ──
+
+async function init() {
+  const statsBar = document.getElementById('statsBar');
+  const grid = document.getElementById('cardGrid');
+  const searchInput = document.getElementById('searchInput');
+
+  try {
+    const resp = await fetch(JSON_PATH);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    allIcons = (data.icons || []).map(normalizeIcon);
+
+    statsBar.textContent =
+      (data.total_icons || allIcons.length).toLocaleString() + ' icons · ' +
+      (data.num_pages || 0) + ' pages · Bad Apple @ ' + FPS + 'fps';
+
+    searchInput.disabled = false;
+    searchInput.placeholder = 'Search icons by mod name, slug, or category…';
+    grid.innerHTML = '<div class="empty-state">Type a mod name above to search 111K+ icons</div>';
+    searchInput.focus();
+  } catch (e) {
+    console.error(e);
+    statsBar.textContent = '⚠ Failed to load icon index';
+    grid.innerHTML = '<div class="empty-state">⚠ Could not load ' + escHtml(JSON_PATH) + '<br><small>' + escHtml(e.message) + '</small></div>';
+  }
+}
+
+// ── Debounced search ──
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  clearTimeout(searchTimeout);
+  const val = e.target.value;
+  searchTimeout = setTimeout(() => doSearch(val), 150);
+});
+
+// ── Keyboard shortcut: / to focus search ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
